@@ -3756,7 +3756,7 @@ NTSTATUS fs_write(PDEVICE_OBJECT DeviceObject, PIRP Irp, PIO_STACK_LOCATION IrpS
 	uio_t *uio;
 	uio = uio_create(1, byteOffset.QuadPart, UIO_SYSSPACE, UIO_WRITE);
 	if (Irp->MdlAddress)
-		uio_addiov(uio, MmGetSystemAddressForMdl(Irp->MdlAddress), bufferLength);
+		uio_addiov(uio, MmGetSystemAddressForMdlSafe(Irp->MdlAddress, NormalPagePriority), bufferLength);
 	else
 		uio_addiov(uio, Irp->AssociatedIrp.SystemBuffer, bufferLength);
 

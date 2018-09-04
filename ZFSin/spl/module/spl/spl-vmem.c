@@ -2705,7 +2705,7 @@ vmem_bucket_alloc(vmem_t *null_vmp, uint32_t size, const int vmflags)
 
 	if (0 != (vmflags & (VM_PUSHPAGE | VM_NOSLEEP | VM_PANIC | VM_ABORT))) {
 		local_hipriority_allocator = TRUE;
-		hipriority_allocators++;
+		atomic_inc_32(&hipriority_allocators);
 	}
 
 	if (!ISP2(size))
@@ -2761,7 +2761,8 @@ vmem_bucket_alloc(vmem_t *null_vmp, uint32_t size, const int vmflags)
 	// allocating in the bucket, or [4]if this thread has (rare condition) spent
 	// a quarter of a second in the loop.
 
-	if (waiters++ > 1 || loop_once) {
+	atomic_inc_32(&waiters);
+	if (waiters > 1 || loop_once) {
 		atomic_inc_64(&spl_vba_loop_entries);
 	}
 
@@ -2879,6 +2880,7 @@ vmem_bucket_alloc(vmem_t *null_vmp, uint32_t size, const int vmflags)
 			// cv_timedwait_hires timer expired
 			timedout |= 1;
 			cv_broadcast(&bvmp->vm_cv);
+			break;
 		} else if ((timedout & 2) == 0) {
 			// we were awakened; check to see if we have been
 			// in the for loop for a long time
@@ -2993,7 +2995,7 @@ vmem_bucket_alloc(vmem_t *null_vmp, uint32_t size, const int vmflags)
 	buckets_busy_allocating &= ~bucket_bit;
 
 	if (local_hipriority_allocator)
-		hipriority_allocators--;
+		atomic_dec_32(&hipriority_allocators);
 
 	// if we got an allocation, wake up the arena cv waiters
 	// to let them try to exit the for(;;) loop above and
@@ -3003,7 +3005,10 @@ vmem_bucket_alloc(vmem_t *null_vmp, uint32_t size, const int vmflags)
 		cv_broadcast(&calling_arena->vm_cv);
 	}
 
-	waiters--;
+	ASSERT(waiters > 0);
+
+	atomic_dec_32(&waiters);
+
 	spl_vba_threads[bucket_number]--;
 	return (m);
 }
