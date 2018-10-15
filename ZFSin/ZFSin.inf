@@ -22,35 +22,35 @@ ZFSin.DllFiles          = 11            ;%windir%\system32
 ;; Default install sections
 ;;
 
-;[DefaultInstall]
-;OptionDesc  = %ServiceDescription%
-;CopyFiles   = ZFSin.DriverFiles
-;;;,ZFSin.DllFiles
-;RegisterDlls = shellzfsin
-;CopyINF     = ZFSin.inf
-;
-;[DefaultInstall.Services]
-;AddService  = %ServiceName%,0x802,ZFSin.Service
-
-[Manufacturer]
-%Me%=Standard,NTamd64,NTx86
-
-[Standard.NTamd64]
-%VolumeName% = ZFSin_Install, ZFSinVolume
-%ControllerName% = ZFSin_Install, ROOT\ZFSin
-
-[Standard.NTx86]
-%VolumeName% = ZFSin_Install, ZFSinVolume
-%ControllerName% = ZFSin_Install, ROOT\ZFSin
-
-[ZFSin_Install]
-OptionDesc   = %ServiceDescription%
-CopyFiles    = ZFSin.DriverFiles
+[DefaultInstall]
+OptionDesc  = %ServiceDescription%
+CopyFiles   = ZFSin.DriverFiles
 ;;,ZFSin.DllFiles
-;;RegisterDlls = shellzfsin
+;RegisterDlls = shellzfsin
+CopyINF     = ZFSin.inf
 
-[ZFSin_Install.Services]
-AddService  = %ServiceName%,2,ZFSin.Service
+[DefaultInstall.Services]
+AddService  = %ServiceName%,0x802,ZFSin.Service
+
+;[Manufacturer]
+;%Me%=Standard,NTamd64,NTx86
+;
+;[Standard.NTamd64]
+;%VolumeName% = ZFSin_Install, ZFSinVolume
+;%ControllerName% = ZFSin_Install, ROOT\ZFSin
+;
+;[Standard.NTx86]
+;%VolumeName% = ZFSin_Install, ZFSinVolume
+;%ControllerName% = ZFSin_Install, ROOT\ZFSin
+;
+;[ZFSin_Install]
+;OptionDesc   = %ServiceDescription%
+;CopyFiles    = ZFSin.DriverFiles
+;;;,ZFSin.DllFiles
+;;;RegisterDlls = shellzfsin
+;
+;[ZFSin_Install.Services]
+;AddService  = %ServiceName%,2,ZFSin.Service
 
 ;;
 ;; Default uninstall sections
@@ -96,13 +96,17 @@ ZFSin.sys = 1,,
 ;;zpool.exe = 1,,
 ;;zfs.exe = 1,,
 
-[SourceDisksNames.x86]
+[SourceDisksNames]
 1 = %DiskId1%,,
-;;,\x86
+;;;,\x86
 
-[SourceDisksNames.amd64]
-1 = %DiskId1%,,
-;;,\x64
+;[SourceDisksNames.x86]
+;1 = %DiskId1%,,
+;;;,\x86
+;
+;[SourceDisksNames.amd64]
+;1 = %DiskId1%,,
+;;;,\x64
 
 ;;
 ;; String Section
