@@ -1541,6 +1541,10 @@ zfs_ioc_pool_export(zfs_cmd_t *zc)
 static int
 zfs_ioc_pool_configs(zfs_cmd_t *zc)
 {
+	DbgBreakPoint();
+	zfs_unregister_fs();
+	return 0;
+
 	nvlist_t *configs;
 	int error;
 
@@ -6795,6 +6799,7 @@ VOID  DriverNotificationRoutine(
 
 
 #include <Wdmsec.h>
+PDEVICE_OBJECT fsDiskDeviceObject = NULL;
 static int
 zfs_attach(void)
 {
@@ -6833,11 +6838,11 @@ zfs_attach(void)
 	}
 	dprintf("ZFS: created kernel device node: %p: name %wZ\n", ioctlDeviceObject, ZFS_DEV_KERNEL);
 
-	PDEVICE_OBJECT fsDiskDeviceObject;
+	
 	UNICODE_STRING fsDiskDeviceName;
 	RtlInitUnicodeString(&fsDiskDeviceName, ZFS_GLOBAL_FS_DISK_DEVICE_NAME);
 
-	ntStatus = IoCreateDeviceSecure(WIN_DriverObject,      // DriverObject
+	/*ntStatus = IoCreateDeviceSecure(WIN_DriverObject,      // DriverObject
 		sizeof(mount_t),      // DeviceExtensionSize
 		&fsDiskDeviceName, // DeviceName
 		FILE_DEVICE_DISK_FILE_SYSTEM, // DeviceType
@@ -6845,8 +6850,15 @@ zfs_attach(void)
 		FALSE,                // Not Exclusive
 		&sddl,                // Default SDDL String
 		NULL,                 // Device Class GUID
-		&fsDiskDeviceObject); // DeviceObject
+		&fsDiskDeviceObject); // DeviceObject*/
 
+	ntStatus = IoCreateDevice(WIN_DriverObject,
+		sizeof(mount_t),
+		&fsDiskDeviceName,
+		FILE_DEVICE_DISK_FILE_SYSTEM,
+		0,
+		FALSE,
+		&fsDiskDeviceObject);
 
 	ObReferenceObject(ioctlDeviceObject);
 
@@ -6969,6 +6981,14 @@ zfs_attach(void)
 	ntStatus = IoRegisterFsRegistrationChange(WIN_DriverObject, DriverNotificationRoutine);
 
 	return (0);
+}
+
+void
+zfs_unregister_fs(void) {
+	//IoUnregisterFsRegistrationChange(WIN_DriverObject, DriverNotificationRoutine);
+	IoUnregisterFileSystem(fsDiskDeviceObject);
+	IoDeleteDevice(fsDiskDeviceObject);
+	IoDeleteDevice(ioctlDeviceObject);
 }
 
 static void

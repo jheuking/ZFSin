@@ -660,7 +660,7 @@ extern int zfs_ioctl_osx_init(void);
 extern int zfs_ioctl_osx_fini(void);
 
 extern int zfs_vnop_force_formd_normalized_output;
-
+extern void zfs_unregister_fs(void);
 #endif	/* _KERNEL */
 
 #ifdef	__cplusplus
